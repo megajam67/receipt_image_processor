@@ -11,6 +11,7 @@ from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from dotenv import load_dotenv
+from pdf2image import convert_from_path
 
 # Load environment variables
 load_dotenv()
@@ -273,37 +274,64 @@ def save_output_json(receipt_data, original_filename):
         logger.error(f"Error saving output JSON: {e}")
 
 
-def process_receipt_image(image_path):
+def convert_pdf_to_images(pdf_path, output_dir):
     """
-    Process a receipt image through the entire pipeline.
+    Convert only the first page of a PDF to an image and save it.
     """
-    try:
-        logger.info(f"Processing image: {image_path}")
-        
-        # Extract text from the image
-        text = extract_text(image_path)
-        if not text:
-            logger.error(f"No text could be extracted from {image_path}")
-            return False
-            
-        # Send to AI API for data extraction
-        receipt_data = send_to_ai_api(text)
-        
-        # Save the extracted data
-        original_filename = os.path.basename(image_path)
-        
-        # Save to database
-        db_result = save_to_database(receipt_data, original_filename)
-        
-        # Save output JSON for reference
-        save_output_json(receipt_data, original_filename)
-        
-        return db_result
-        
-    except Exception as e:
-        logger.error(f"Error processing receipt {image_path}: {e}")
-        return False
+    images = convert_from_path(pdf_path, first_page=1, last_page=1)  # Only process page 1
 
+    image_paths = []
+    for i, image in enumerate(images):
+        image_filename = os.path.join(output_dir, f"{os.path.basename(pdf_path)}_page_1.jpg")
+        image.save(image_filename, "JPEG")
+        image_paths.append(image_filename)
+
+    return image_paths
+
+    
+def process_receipt_image(file_path):
+    """
+    Process a receipt image or convert a PDF to images before processing.
+    """
+    logger.info(f"Received file for processing: {file_path}")  # DEBUG LOG
+
+    try:
+        # Check if the file is a PDF and convert it
+        if file_path.lower().endswith(".pdf"):
+            logger.info(f"Converting PDF: {file_path} to images")  # DEBUG LOG
+            image_paths = convert_pdf_to_images(file_path, OUTPUT_DIR)
+        else:
+            image_paths = [file_path]  # Treat it as an image file
+
+        for image_path in image_paths:
+            logger.info(f"Processing image: {image_path}")
+
+            # Extract text from the image
+            text = extract_text(image_path)
+            if not text:
+                logger.error(f"No text could be extracted from {image_path}")
+                continue  # Skip to next image if OCR fails
+            
+            # Send extracted text to AI API for processing
+            receipt_data = send_to_ai_api(text)
+            
+            # Save the extracted data
+            original_filename = os.path.basename(file_path)
+            
+            # Save to database
+            db_result = save_to_database(receipt_data, original_filename)
+            
+            # Save output JSON for reference
+            save_output_json(receipt_data, original_filename)
+
+            if db_result:
+                logger.info(f"Successfully processed and saved {original_filename}")
+            else:
+                logger.error(f"Failed to save {original_filename} to database")
+
+    except Exception as e:
+        logger.error(f"Error processing receipt {file_path}: {e}")
+        return False
 
 class ReceiptHandler(FileSystemEventHandler):
     """
@@ -317,7 +345,7 @@ class ReceiptHandler(FileSystemEventHandler):
         file_ext = os.path.splitext(file_path)[1].lower()
         
         # Check if the file is an image
-        if file_ext in ['.jpg', '.jpeg', '.png', '.tiff', '.bmp', '.gif']:
+        if file_ext in ['.jpg', '.jpeg', '.png', '.tiff', '.bmp', '.gif', '.pdf']:
             # Wait a bit to ensure the file is completely written
             time.sleep(1)
             process_receipt_image(file_path)
