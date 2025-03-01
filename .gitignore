@@ -9,3 +9,6 @@ output/failed/
 # Ignore temporary image files
 temp_cleaned.jpg
 temp_images/
+
+# macOS metadata file (just in case)
+.DS_Store
