@@ -27,6 +27,9 @@ logger = logging.getLogger('receipt_processor')
 # API Configuration
 AI_API_KEY = os.getenv('AI_API_KEY')
 AI_API_URL = os.getenv('AI_API_URL')
+CATEGORY_LIST = [
+    "Food & Dining", "Groceries", "Transportation", "Utilities", "Healthcare",
+    "Entertainment", "Office Supplies", "Telecommunication", "Travel", "Miscellaneous"]
 
 # Database Configuration
 DB_HOST = os.getenv('DB_HOST')
@@ -128,8 +131,10 @@ def send_to_ai_api(text):
         1. Date of service (in YYYY-MM-DD format)
         2. Payee/Vendor name
         3. Total amount
-        4. Expense category or purpose (if available)
-        
+        4. Expense category (Choose the best match from the following list):
+
+        {", ".join(CATEGORY_LIST)}
+
         Receipt text:
         {text}
         
@@ -144,18 +149,28 @@ def send_to_ai_api(text):
             ],
             'temperature': 0.3
         }
+
+        print(f"Sending API request with payload:\n{json.dumps(payload, indent=2)}")  # Debug print
         
         response = requests.post(AI_API_URL, headers=headers, json=payload)
         response.raise_for_status()
         
         # Extract the content from the AI response
         result = response.json()
+        print(f"API Response:\n{json.dumps(result, indent=2)}")  # Debug print
+
         ai_message = result.get('choices', [{}])[0].get('message', {}).get('content', '{}')
         
         # Try to parse the JSON response
         try:
             extracted_data = json.loads(ai_message)
+
+            # Ensure category is within predefined list
+            if extracted_data.get("category") not in CATEGORY_LIST:
+                extracted_data["category"] = "Miscellaneous"
+
             return extracted_data
+
         except json.JSONDecodeError:
             # If AI didn't return proper JSON, try to extract data manually
             logger.warning(f"AI didn't return proper JSON. Raw response: {ai_message}")
@@ -163,17 +178,17 @@ def send_to_ai_api(text):
                 'date': extract_date_from_text(ai_message),
                 'payee': extract_payee_from_text(ai_message),
                 'amount': extract_amount_from_text(ai_message),
-                'category': extract_category_from_text(ai_message)
+                'category': "Miscellaneous"
             }
             return extracted_data
-            
+
     except Exception as e:
-        logger.error(f"Error calling AI API: {e}")
+        print(f"Error calling AI API: {e}")  # logger.error(f"Error calling AI API: {e}")
         return {
             'date': None,
             'payee': None,
             'amount': None,
-            'category': None
+            'category': "Miscellaneous"
         }
 
 
