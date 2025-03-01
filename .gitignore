@@ -1,0 +1,11 @@
+# Ignore environment variables
+.env
+
+# Ignore input and output directories
+input/
+output/
+output/failed/
+
+# Ignore temporary image files
+temp_cleaned.jpg
+temp_images/

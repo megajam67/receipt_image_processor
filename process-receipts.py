@@ -6,6 +6,7 @@ import cv2
 import pytesseract
 import requests
 import psycopg2
+import shutil
 from PIL import Image
 from datetime import datetime
 from watchdog.observers import Observer
@@ -28,15 +29,36 @@ AI_API_KEY = os.getenv('AI_API_KEY')
 AI_API_URL = os.getenv('AI_API_URL')
 
 # Database Configuration
-DB_HOST = os.getenv('DB_HOST', 'db')
-DB_PORT = os.getenv('DB_PORT', '5432')
-DB_NAME = os.getenv('DB_NAME', 'receipts')
-DB_USER = os.getenv('DB_USER', 'postgres')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 # Directories
 INPUT_DIR = os.getenv('INPUT_DIR', '/app/input')
 OUTPUT_DIR = os.getenv('OUTPUT_DIR', '/app/output')
+
+
+def move_failed_file(file_path):
+    """
+    Move failed files to a separate 'failed' directory for troubleshooting.
+    """
+    failed_dir = os.path.join(OUTPUT_DIR, "failed")
+    os.makedirs(failed_dir, exist_ok=True)  # Ensure the directory exists
+
+    new_path = os.path.join(failed_dir, os.path.basename(file_path))
+
+    #print(f"Attempting to move failed file: {file_path} → {new_path}")  # Debug print
+    
+    try:
+        shutil.move(file_path, new_path)
+        print(f"Moved failed file to: {new_path}")  # Print for visibility
+    except Exception as e:
+        print(f"Error processing file {file_path}: {e}")
+        print(f"Calling move_failed_file() for {file_path}")  # Debug print
+        move_failed_file(file_path)
+
 
 
 def preprocess_image(image_path):
@@ -288,7 +310,7 @@ def convert_pdf_to_images(pdf_path, output_dir):
 
     return image_paths
 
-    
+
 def process_receipt_image(file_path):
     """
     Process a receipt image or convert a PDF to images before processing.
@@ -329,9 +351,14 @@ def process_receipt_image(file_path):
             else:
                 logger.error(f"Failed to save {original_filename} to database")
 
+        # ✅ **Delete file only if processing was successful**        
+        os.remove(file_path)
+        logger.info(f"Deleted processed file: {file_path}")
+
     except Exception as e:
-        logger.error(f"Error processing receipt {file_path}: {e}")
+        move_failed_file(file_path)  # Move failed file to "failed" folder
         return False
+
 
 class ReceiptHandler(FileSystemEventHandler):
     """
