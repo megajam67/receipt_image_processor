@@ -2,9 +2,10 @@
 .env
 
 # Ignore input and output directories
-input/
-output/
-output/failed/
+file_processor/input/
+file_processor/output/
+file_processor/output/failed/
+file_processor/temp_images
 
 # Ignore temporary image files
 temp_cleaned.jpg

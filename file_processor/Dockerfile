@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-WORKDIR /
+WORKDIR /file_processor
 
 # Install system dependencies for Tesseract OCR and other tools
 RUN apt-get update && apt-get install -y \
@@ -24,4 +24,4 @@ COPY . .
 RUN mkdir -p /app/input /app/output
 
 # Run the application
-CMD ["python", "process-receipts.py"]
+CMD ["python", "process_files.py"]

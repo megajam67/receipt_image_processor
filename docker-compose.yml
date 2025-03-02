@@ -1,13 +1,13 @@
 
 services:
-  receipt-processor:
+  file-processor:
     build:
-      context: .
+      context: ./file_processor
       dockerfile: Dockerfile
-    container_name: receipt-processor
+    container_name: file-processor
     volumes:
-      - ./input:/app/input
-      - ./output:/app/output
+      - ./file_processor/input:/file_processor/input
+      - ./file_processor/output:/file_processor/output
     environment:
       - AI_API_KEY=${AI_API_KEY}
       - AI_API_URL=${AI_API_URL}
@@ -31,7 +31,6 @@ services:
       - POSTGRES_DB=${DB_NAME}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     networks:

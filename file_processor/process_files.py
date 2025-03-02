@@ -19,7 +19,7 @@ load_dotenv()
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger('receipt_processor')
@@ -39,8 +39,8 @@ DB_USER = os.getenv('DB_USER')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 # Directories
-INPUT_DIR = os.getenv('INPUT_DIR', '/app/input')
-OUTPUT_DIR = os.getenv('OUTPUT_DIR', '/app/output')
+INPUT_DIR = os.getenv('INPUT_DIR', '/file_processor/input')
+OUTPUT_DIR = os.getenv('OUTPUT_DIR', '/file_processor/output')
 
 
 def move_failed_file(file_path):
