@@ -24,4 +24,4 @@ COPY . .
 RUN mkdir -p /app/input /app/output
 
 # Run the application
-CMD ["python", "process_files.py"]
+CMD ["python", "process_files.py"]  

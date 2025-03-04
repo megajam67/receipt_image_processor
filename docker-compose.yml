@@ -21,6 +21,47 @@ services:
     networks:
       - receipt-network
 
+  # email-processor:
+  #   build:
+  #     context: ./email_processor
+  #     dockerfile: Dockerfileww
+  #   container_name: email-processor
+  #   volumes:
+  #     - ./email_processor/emails:/email_processor/emails
+  #     - ./email_processor/output:/email_processor/output
+  #   environment:
+  #     - OPENAI_API_KEY=${AI_API_KEY}
+  #     - AI_API_URL=${AI_API_URL}
+  #     - DB_HOST=db
+  #     - DB_PORT=5432
+  #     - DB_NAME=${DB_NAME}
+  #     - DB_USER=${DB_USER}
+  #     - DB_PASSWORD=${DB_PASSWORD}
+  #     - EMAIL_FILE=/email_processor/emails/sample.eml
+  #     - OUTPUT_JSON=/email_processor/output/receipt.json
+  #   depends_on:
+  #     - db
+  #   dns:
+  #     - 8.8.8.8
+  #     - 8.8.4.4
+  #   networks:
+  #     - receipt-network
+
+db:
+  image: postgres:14
+  container_name: receipt-db
+  restart: always
+  environment:
+    - POSTGRES_USER=${DB_USER}
+    - POSTGRES_PASSWORD=${DB_PASSWORD}
+    - POSTGRES_DB=${DB_NAME}
+  volumes:
+    - ./postgres_data:/var/lib/postgresql/data
+  ports:
+    - "5432:5432"
+  networks:
+    - receipt-network
+    
   db:
     image: postgres:14
     container_name: receipt-db

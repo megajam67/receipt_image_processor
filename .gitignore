@@ -4,8 +4,10 @@
 # Ignore input and output directories
 file_processor/input/
 file_processor/output/
-file_processor/output/failed/
-file_processor/temp_images
+file_processor/processed/
+file_processor/temp_images/
+
+email_processor/
 
 # Ignore temporary image files
 temp_cleaned.jpg
