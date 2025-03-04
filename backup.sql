@@ -1,0 +1,467 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.17 (Debian 14.17-1.pgdg120+1)
+-- Dumped by pg_dump version 14.17 (Debian 14.17-1.pgdg120+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: receipts; Type: TABLE; Schema: public; Owner: doc_admin
+--
+
+CREATE TABLE public.receipts (
+    id integer NOT NULL,
+    date_of_service date,
+    payee character varying(255),
+    amount numeric(10,2),
+    expense_category character varying(100),
+    original_filename character varying(255) NOT NULL,
+    processed_at timestamp without time zone NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.receipts OWNER TO doc_admin;
+
+--
+-- Name: receipt_summary; Type: VIEW; Schema: public; Owner: doc_admin
+--
+
+CREATE VIEW public.receipt_summary AS
+ SELECT date_trunc('month'::text, (receipts.date_of_service)::timestamp with time zone) AS month,
+    receipts.expense_category,
+    count(*) AS receipt_count,
+    sum(receipts.amount) AS total_amount
+   FROM public.receipts
+  WHERE (receipts.date_of_service IS NOT NULL)
+  GROUP BY (date_trunc('month'::text, (receipts.date_of_service)::timestamp with time zone)), receipts.expense_category
+  ORDER BY (date_trunc('month'::text, (receipts.date_of_service)::timestamp with time zone)) DESC, (sum(receipts.amount)) DESC;
+
+
+ALTER TABLE public.receipt_summary OWNER TO doc_admin;
+
+--
+-- Name: receipts_id_seq; Type: SEQUENCE; Schema: public; Owner: doc_admin
+--
+
+CREATE SEQUENCE public.receipts_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.receipts_id_seq OWNER TO doc_admin;
+
+--
+-- Name: receipts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: doc_admin
+--
+
+ALTER SEQUENCE public.receipts_id_seq OWNED BY public.receipts.id;
+
+
+--
+-- Name: receipts id; Type: DEFAULT; Schema: public; Owner: doc_admin
+--
+
+ALTER TABLE ONLY public.receipts ALTER COLUMN id SET DEFAULT nextval('public.receipts_id_seq'::regclass);
+
+
+--
+-- Data for Name: receipts; Type: TABLE DATA; Schema: public; Owner: doc_admin
+--
+
+COPY public.receipts (id, date_of_service, payee, amount, expense_category, original_filename, processed_at, created_at) FROM stdin;
+1	2018-01-09	James Megargel	1.99	Miscellaneous	WalletBalance-2018-02-09.pdf_page_1.jpg	2025-03-02 15:44:16.536141	2025-03-02 13:10:27.142569
+2	2018-04-16	Firoripa DEPARTMENT OF STATE	138.75	Miscellaneous	2018 Annual Business Renewal Florida Sequoia Healthcare2.pdf	2025-03-02 18:26:10.917001	2025-03-02 18:26:10.930824
+3	2018-01-09	James Megargel	1.99	Miscellaneous	WalletBalance-2018-02-09.pdf_page_1.jpg	2025-03-02 19:24:06.685546	2025-03-02 19:24:06.700003
+4	2018-04-16	Firoripa DEPARTMENT OF STATE	138.75	Miscellaneous	2018 Annual Business Renewal Florida Sequoia Healthcare.pdf	2025-03-03 02:41:17.881765	2025-03-03 02:41:17.921101
+5	2018-04-25	Anthony Quaglieri	175.00	Healthcare	2018 Apr Quaglieri Invoice Submitted Reimbursed.pdf	2025-03-03 02:41:22.373733	2025-03-03 02:41:22.397196
+6	2018-04-25	Anthony Quaglieri	175.00	Healthcare	2018 Apr TONY Quaglieri INvoice.pdf	2025-03-03 02:41:26.685569	2025-03-03 02:41:26.702695
+7	2018-12-01	TeamHealth Inc.	175.00	Healthcare	2018 Apr Tony Quaglieri WageWorks Verification.pdf	2025-03-03 02:41:34.529362	2025-03-03 02:41:34.548837
+8	2018-05-25	Emity Shull	660.00	Healthcare	2018 May Emily Shull Optometrist Eyeglasses Invoice.pdf	2025-03-03 02:41:40.102708	2025-03-03 02:41:40.120526
+9	2018-11-01	Emily Shull	108.90	Healthcare	2018 Nov Sight Invoice Contacts.pdf	2025-03-03 02:41:44.810887	2025-03-03 02:41:44.828341
+10	2018-03-19	ABA, THE AMERICAN BOARD OF ANESTHESIOLOGY	210.00	Healthcare	2018 Receipt ABA MOCA Minute.pdf	2025-03-03 02:41:49.624627	2025-03-03 02:41:49.642719
+11	2018-09-03	THE HERTZ CORPORATION	178.68	Transportation	2018 Sep Hertz E-Return 986252142.PDF	2025-03-03 02:41:54.6431	2025-03-03 02:41:54.661084
+12	2018-08-02	Lighting Innovation	581.00	Utilities	2018 Summer Lighting Innovation Invoice.pdf	2025-03-03 02:41:59.660571	2025-03-03 02:41:59.67665
+13	2019-10-25	Department of Consumer Affairs	820.00	Healthcare	2019 California Biennial License Renewal Fee .pdf	2025-03-03 02:42:03.859202	2025-03-03 02:42:03.874993
+14	2019-10-24	NetCE	75.00	Healthcare	2019 CME NetCE.pdf	2025-03-03 02:42:08.160239	2025-03-03 02:42:08.17602
+15	2019-07-17	ming Sm le Cente! FHATI2019	160.60	Healthcare	2019 Dental Receipt Cincinnati x2.pdf	2025-03-03 02:42:13.996979	2025-03-03 02:42:14.013001
+16	2020-06-15	CSbank	\N	Miscellaneous	111 - 10.jpeg	2025-03-03 13:51:59.507001	2025-03-03 13:51:59.526022
+17	\N	\N	\N	Miscellaneous	111 - 11.jpeg	2025-03-03 13:52:09.35205	2025-03-03 13:52:09.368097
+18	\N	GLOCK Safe Action® Pistols	\N	Miscellaneous	2015 Glock 43 Receipt.pdf	2025-03-03 13:53:46.824878	2025-03-03 13:53:46.840798
+19	2018-03-15	spire G	250.57	Utilities	0449412222.pdf	2025-03-03 13:56:45.009287	2025-03-03 13:56:45.0253
+20	\N	\N	\N	Miscellaneous	111 - 11.jpeg	2025-03-03 13:56:56.575971	2025-03-03 13:56:56.591921
+21	2018-01-19	MENARDS EVENDALE	159.11	Miscellaneous	111 - 12.jpeg	2025-03-03 13:57:07.739985	2025-03-03 13:57:07.754534
+22	2023-03-21	Gap	19.01	Miscellaneous	111 - 13.jpeg	2025-03-03 13:58:15.16233	2025-03-03 13:58:15.178433
+23	\N	\N	\N	Miscellaneous	111 - 17.jpeg	2025-03-03 13:59:38.446753	2025-03-03 13:59:38.462841
+24	2023-11-18	webpayments.billmatrix.ccom	600.00	Utilities	111 - 19.jpeg	2025-03-03 13:59:51.987756	2025-03-03 13:59:52.003106
+25	2021-12-23	THE UPS STORE #3146	\N	Transportation	111 - 2.jpeg	2025-03-03 13:59:58.366465	2025-03-03 13:59:58.38238
+26	2022-07-01	\N	\N	Miscellaneous	111 - 20.jpeg	2025-03-03 14:00:09.40029	2025-03-03 14:00:09.419026
+27	2020-10-05	DIVISION OF INVESTIGATION Health Quality Investigation Unit	\N	Healthcare	111 - 22.jpeg	2025-03-03 14:00:20.464013	2025-03-03 14:00:20.479676
+28	2020-02-03	iStorage Reading	1104.15	Utilities	111 - 23.jpeg	2025-03-03 14:00:24.553095	2025-03-03 14:00:24.569472
+29	2023-11-04	Florida's Turnpike	1.75	Transportation	111 - 24.jpeg	2025-03-03 14:00:29.675751	2025-03-03 14:00:29.692681
+30	\N	\N	\N	Miscellaneous	111 - 26.jpeg	2025-03-03 14:00:39.19697	2025-03-03 14:00:39.214916
+31	\N	\N	\N	Miscellaneous	111 - 27.jpeg	2025-03-03 14:01:06.436956	2025-03-03 14:01:06.452964
+32	\N	\N	\N	Miscellaneous	111 - 27.jpeg	2025-03-03 14:02:38.085558	2025-03-03 14:02:38.10145
+33	2024-04-09	webpayments.billmatrix.com	600.00	Utilities	111 - 28.jpeg	2025-03-03 14:02:44.226871	2025-03-03 14:02:44.244403
+34	\N	\N	\N	Miscellaneous	111 - 29.jpeg	2025-03-03 14:02:52.934029	2025-03-03 14:02:52.950191
+35	2018-09-28	VOTE CHCE LAUNCH	428.22	Miscellaneous	111 - 30.jpeg	2025-03-03 14:03:14.438802	2025-03-03 14:03:14.454737
+36	\N	\N	\N	Miscellaneous	111 - 31.jpeg	2025-03-03 14:03:24.684496	2025-03-03 14:03:24.702665
+37	2022-08-26	Fireside Inn	184.00	Travel	111 - 32.jpeg	2025-03-03 14:03:33.897855	2025-03-03 14:03:33.916249
+38	\N	\N	\N	Miscellaneous	111 - 33.jpeg	2025-03-03 14:03:44.438936	2025-03-03 14:03:44.454874
+39	9721-02-21	Walmart	2982.10	Miscellaneous	111 - 34.jpeg	2025-03-03 14:03:54.783817	2025-03-03 14:03:54.799839
+40	2021-01-14	James Megargel	60.00	Utilities	111 - 35.jpeg	2025-03-03 14:04:03.038135	2025-03-03 14:04:03.053915
+41	2024-06-12	THE UPS STORE #3249	\N	Transportation	111 - 36.jpeg	2025-03-03 14:04:16.083302	2025-03-03 14:04:16.099409
+42	2019-02-11	Kiehl's	77.94	Healthcare	111 - 37.jpeg	2025-03-03 14:04:24.193874	2025-03-03 14:04:24.210243
+43	\N	\N	\N	Miscellaneous	111 - 4.jpeg	2025-03-03 14:04:55.196327	2025-03-03 14:04:55.212042
+44	2019-11-07	Zephyr Wellvess	125.00	Healthcare	111 - 40.jpeg	2025-03-03 14:05:02.704244	2025-03-03 14:05:02.72021
+45	2021-08-12	Canteen Tampa	3.43	Food & Dining	111 - 42.jpeg	2025-03-03 14:05:23.803107	2025-03-03 14:05:23.832183
+46	2020-02-03	iStorage Reading	1104.15	Utilities	111 - 43.jpeg	2025-03-03 14:05:31.872367	2025-03-03 14:05:31.888835
+47	2019-07-05	Chase Freedom	500.00	Miscellaneous	111 - 44.jpeg	2025-03-03 14:05:41.699766	2025-03-03 14:05:41.715927
+48	2019-08-19	Best Buy #561	44.54	Entertainment	111 - 47.jpeg	2025-03-03 14:06:13.44447	2025-03-03 14:06:13.464403
+49	2019-06-14	LIVE WEAR LOVE	125.73	Miscellaneous	111 - 49.jpeg	2025-03-03 14:06:33.640065	2025-03-03 14:06:33.656274
+50	2020-02-25	Skyway & Notre Dame	10.40	Food & Dining	111 - 5.jpeg	2025-03-03 14:06:42.44738	2025-03-03 14:06:42.463305
+51	\N	\N	\N	Miscellaneous	111 - 50.jpeg	2025-03-03 14:06:53.530202	2025-03-03 14:06:53.546502
+52	2023-04-16	THE UPS STORE	\N	Miscellaneous	111 - 52.jpeg	2025-03-03 14:07:12.860947	2025-03-03 14:07:12.878439
+53	2019-05-27	Delta	884.60	Travel	111 - 53.jpeg	2025-03-03 14:07:23.648239	2025-03-03 14:07:23.663863
+54	2019-08-28	Chase Freedom	0.00	Miscellaneous	111 - 54.jpeg	2025-03-03 14:07:34.369701	2025-03-03 14:07:34.385758
+55	2024-12-11	Ollies Bargain Out let	57.45	Miscellaneous	111 - 55.jpeg	2025-03-03 14:07:43.98862	2025-03-03 14:07:44.004936
+56	2022-01-25	\N	\N	Miscellaneous	111 - 56.jpeg	2025-03-03 14:07:54.459339	2025-03-03 14:07:54.475196
+57	2021-02-21	\N	\N	Miscellaneous	111 - 57.jpeg	2025-03-03 14:08:04.470494	2025-03-03 14:08:04.48831
+58	\N	\N	\N	Miscellaneous	111 - 58.jpeg	2025-03-03 14:08:12.563222	2025-03-03 14:08:12.578745
+59	2018-09-06	UPS Store - #1696	15.56	Office Supplies	111 - 6.jpeg	2025-03-03 14:08:33.784518	2025-03-03 14:08:33.801946
+60	2020-05-16	Erotic Niche	62.76	Travel	111 - 60.jpeg	2025-03-03 14:08:42.871222	2025-03-03 14:08:42.886944
+61	2023-02-21	Walmart	\N	Transportation	111 - 61.jpeg	2025-03-03 14:08:53.049329	2025-03-03 14:08:53.065355
+62	\N	\N	\N	Miscellaneous	111 - 63.jpeg	2025-03-03 14:09:14.001436	2025-03-03 14:09:14.01757
+63	2024-05-29	Pakmail 343	\N	Transportation	111 - 65.jpeg	2025-03-03 14:09:32.945265	2025-03-03 14:09:32.961539
+64	2023-11-01	Florida's Turnpike	1.75	Transportation	111 - 67.jpeg	2025-03-03 14:09:52.380228	2025-03-03 14:09:52.396459
+65	2020-12-31	The Trevor Project	121.20	Miscellaneous	111 - 68.jpeg	2025-03-03 14:10:03.344566	2025-03-03 14:10:03.361075
+66	2020-08-01	The UPS Store	8.70	Office Supplies	111 - 69.jpeg	2025-03-03 14:10:13.98868	2025-03-03 14:10:14.004774
+67	2018-11-19	PayPal	337.00	Travel	111 - 7.jpeg	2025-03-03 14:10:23.96119	2025-03-03 14:10:23.97796
+68	2024-03-01	Walmart	131.89	Miscellaneous	111 - 70.jpeg	2025-03-03 14:10:35.000267	2025-03-03 14:10:35.016041
+69	\N	\N	\N	Miscellaneous	111 - 72.jpeg	2025-03-03 14:10:52.716889	2025-03-03 14:10:52.732746
+70	2024-05-07	HOME DEPOT	23.53	Office Supplies	111 - 75.jpeg	2025-03-03 14:11:24.053079	2025-03-03 14:11:24.069233
+71	\N	\N	\N	Miscellaneous	111 - 76.jpeg	2025-03-03 14:11:33.228898	2025-03-03 14:11:33.245474
+72	\N	\N	\N	Miscellaneous	111 - 77.jpeg	2025-03-03 14:11:43.192596	2025-03-03 14:11:43.208264
+73	2021-04-21	AUTO SUPERSTORE	4000.00	Transportation	111 - 78.jpeg	2025-03-03 14:11:54.298225	2025-03-03 14:11:54.325517
+74	2018-10-11	Best Buy #277	218.18	Office Supplies	111 - 79.jpeg	2025-03-03 14:12:04.104593	2025-03-03 14:12:04.120452
+75	2024-12-20	VS ic GLOBAL LENDING	\N	Miscellaneous	111 - 80.jpeg	2025-03-03 14:12:26.108436	2025-03-03 14:12:26.124262
+76	\N	\N	\N	Miscellaneous	111 - 81.jpeg	2025-03-03 14:12:32.840781	2025-03-03 14:12:32.856089
+77	2020-02-13	Walmart	33.63	Groceries	111 - 82.jpeg	2025-03-03 14:12:43.230116	2025-03-03 14:12:43.248379
+78	2023-10-23	Florida's Turnpike	1.75	Transportation	111 - 83.jpeg	2025-03-03 14:12:54.0623	2025-03-03 14:12:54.080267
+79	2021-12-23	Minute Key	10.70	Miscellaneous	111 - 84.jpeg	2025-03-03 14:13:03.585396	2025-03-03 14:13:03.601471
+80	\N	\N	\N	Miscellaneous	111 - 85.jpeg	2025-03-03 14:13:15.258851	2025-03-03 14:13:15.277513
+81	\N	\N	\N	Miscellaneous	111 - 86.jpeg	2025-03-03 14:13:23.763016	2025-03-03 14:13:23.778734
+82	\N	\N	\N	Miscellaneous	111 - 87.jpeg	2025-03-03 14:13:33.999259	2025-03-03 14:13:34.017088
+83	\N	\N	\N	Miscellaneous	111 - 88.jpeg	2025-03-03 14:13:46.800493	2025-03-03 14:13:46.81929
+84	2013-08-03	MICHAELS STORE #374	156.94	Office Supplies	111 - 89.jpeg	2025-03-03 14:13:54.578104	2025-03-03 14:13:54.59515
+85	2020-12-14	Mercari, Inc.	165.00	Miscellaneous	111 - 9.jpeg	2025-03-03 14:14:03.901908	2025-03-03 14:14:03.917672
+86	2023-10-23	PLAZA 101400 LANE 132	1.75	Transportation	111 - 90.jpeg	2025-03-03 14:14:14.051035	2025-03-03 14:14:14.067657
+87	\N	\N	\N	Miscellaneous	111 - 91.jpeg	2025-03-03 14:14:23.150067	2025-03-03 14:14:23.165942
+88	2024-01-05	GLOBAL LENDING	50.00	Utilities	111 - 92.jpeg	2025-03-03 14:14:34.168117	2025-03-03 14:14:34.184425
+89	2020-07-22	The UPS Store	\N	Transportation	111 - 93.jpeg	2025-03-03 14:14:46.548769	2025-03-03 14:14:46.568339
+90	2018-11-19	JAMES D. MEGARGEL, M.D.	459.00	Healthcare	1403800v1-Billing Statement October 2018.pdf	2025-03-03 14:14:54.616389	2025-03-03 14:14:54.63536
+91	\N	GLOCK Safe Action® Pistols	\N	Miscellaneous	2015 Glock 43 Receipt.pdf	2025-03-03 14:15:03.599624	2025-03-03 14:15:03.61549
+92	2015-06-01	APPLE INC.	907.36	Office Supplies	2015-Jun-1 Apple iPhone 6 Space Gray 64GB Verizon.pdf	2025-03-03 14:15:14.5711	2025-03-03 14:15:14.58798
+93	2017-10-22	eBags, Inc.	89.82	Travel	2017 eBags Receipt.png	2025-03-03 14:15:24.89966	2025-03-03 14:15:24.915498
+94	2018-04-16	Firoripa DEPARTMENT OF STATE	138.75	Miscellaneous	2018 Annual Business Renewal Florida Sequoia Healthcare.pdf	2025-03-03 14:15:33.606833	2025-03-03 14:15:33.623098
+95	2018-04-25	Anthony Quaglieri	175.00	Healthcare	2018 Apr Quaglieri Invoice Submitted Reimbursed.pdf	2025-03-03 14:15:44.861407	2025-03-03 14:15:44.877446
+96	2018-04-25	Anthony Quaglieri	175.00	Healthcare	2018 Apr TONY Quaglieri INvoice.pdf	2025-03-03 14:15:53.777521	2025-03-03 14:15:53.793662
+97	2018-12-01	TeamHealth Inc.	175.00	Healthcare	2018 Apr Tony Quaglieri WageWorks Verification.pdf	2025-03-03 14:16:06.527659	2025-03-03 14:16:06.54495
+98	2018-05-25	Emity Shull	660.00	Healthcare	2018 May Emily Shull Optometrist Eyeglasses Invoice.pdf	2025-03-03 14:16:14.564663	2025-03-03 14:16:14.580815
+99	2018-11-01	Emily Shutt	108.90	Healthcare	2018 Nov Sight Invoice Contacts.pdf	2025-03-03 14:16:24.18983	2025-03-03 14:16:24.205821
+100	2018-03-19	ABA, THE AMERICAN BOARD OF ANESTHESIOLOGY	210.00	Healthcare	2018 Receipt ABA MOCA Minute.pdf	2025-03-03 14:16:34.489055	2025-03-03 14:16:34.506265
+101	2018-09-03	THE HERTZ CORPORATION	178.68	Transportation	2018 Sep Hertz E-Return 986252142.PDF	2025-03-03 14:16:45.22172	2025-03-03 14:16:45.237622
+102	2018-08-02	Lighting Innovation	581.00	Office Supplies	2018 Summer Lighting Innovation Invoice.pdf	2025-03-03 14:16:55.145172	2025-03-03 14:16:55.16169
+103	2019-10-24	NetCE	75.00	Healthcare	2019 CME NetCE.pdf	2025-03-03 14:17:04.331141	2025-03-03 14:17:04.347354
+104	2019-10-25	Department of Consumer Affairs	820.00	Healthcare	2019 California Biennial License Renewal Fee .pdf	2025-03-03 14:17:14.059825	2025-03-03 14:17:14.07592
+105	2019-07-17	ming Sm le Cente! FHATI2019	160.60	Healthcare	2019 Dental Receipt Cincinnati x2.pdf	2025-03-03 14:17:25.280978	2025-03-03 14:17:25.295656
+106	\N	\N	\N	Miscellaneous	2019 Gift Receipt Detroit Auto Detailing Gift Certificate - Jorge Tucson .pdf	2025-03-03 14:17:33.70974	2025-03-03 14:17:33.725774
+107	2019-03-25	Courtyard by Marriott Fort Lauderdale North Cypress Creek	12.10	Travel	2019 Mar Courtyard FLL Ron.pdf	2025-03-03 14:17:44.720951	2025-03-03 14:17:44.734411
+108	2019-11-08	Amazon.com	12.92	Office Supplies	2019 Nov Exp Receipt Pens 2.pdf	2025-03-03 14:17:55.64308	2025-03-03 14:17:55.658792
+109	2019-11-08	Amazon.com Services LLC	121.69	Miscellaneous	2019 Nov Exp Receipt Pens.pdf	2025-03-03 14:18:05.259618	2025-03-03 14:18:05.275359
+110	2019-10-25	Amazon.com	53.86	Office Supplies	2019 Oct Exp Receipt Apple 30-pin Adapter.pdf	2025-03-03 14:18:14.78419	2025-03-03 14:18:14.800133
+111	2019-10-24	Amazon.com	64.94	Miscellaneous	2019 Oct Exp Receipt Synology DiskStation Power Cord.pdf	2025-03-03 14:18:24.855748	2025-03-03 14:18:24.872849
+112	\N	\N	\N	Miscellaneous	2019 Sep 22 PF Chang Dining Receipt ATL.pdf	2025-03-03 14:18:34.140216	2025-03-03 14:18:34.156073
+113	2020-08-15	\N	\N	Miscellaneous	2020 Aug 15 -- Residence Inn Invoice.pdf	2025-03-03 14:18:55.509855	2025-03-03 14:18:55.525876
+114	2020-09-08	\N	230.00	Miscellaneous	2020 Aug 30 Internet Suwannee.png	2025-03-03 14:19:14.587317	2025-03-03 14:19:14.604179
+115	2020-02-28	pormhubpremiunr.cent	9.99	Entertainment	2020 Jan PH Premium.pdf	2025-03-03 14:19:24.419008	2025-03-03 14:19:24.434739
+116	2020-03-05	Fairfield by Marriott Roseville	105.26	Travel	2020 Mar Fairfield Folio.pdf	2025-03-03 14:19:34.862451	2025-03-03 14:19:34.878355
+117	2020-03-05	Fairfield by Marriott Roseville	105.26	Travel	2020 Mar Fairfield Inn Sacramento.pdf	2025-03-03 14:19:44.899146	2025-03-03 14:19:44.915196
+118	2020-12-31	Wyndham Rewards	26.00	Travel	2020 Wyndham Point Purchase.pdf	2025-03-03 14:19:54.625625	2025-03-03 14:19:54.641662
+119	2020-08-14	MARRIOTT ALBUQUERQUE MARRIOTT PYRAMID	105.90	Travel	20209 Aug 13 -- Marriott Hotel Folio.pdf	2025-03-03 14:20:06.138111	2025-03-03 14:20:06.154613
+120	2021-08-15	Walgreens	0.18	Miscellaneous	2021 Aug Walgreens Receipt.pdf	2025-03-03 14:20:14.69586	2025-03-03 14:20:14.713745
+121	2021-07-27	Walgreens	1.18	Healthcare	2021 Jul 27 Walgreens Receipt.pdf	2025-03-03 14:20:24.935494	2025-03-03 14:20:24.951663
+122	2022-12-06	alg GLOBAL LENDING	255.00	Miscellaneous	2022 Oct 2nd Pymnt Global Lending Receipt .png	2025-03-03 14:20:44.49457	2025-03-03 14:20:44.510289
+123	2022-01-08	Walgreens	\N	Healthcare	2022-Jan.pdf	2025-03-03 14:20:54.840034	2025-03-03 14:20:54.855508
+124	\N	\N	\N	Miscellaneous	2023 8 17 GoDaddy Receipt sequoia-bookkeeping.png	2025-03-03 14:21:04.053447	2025-03-03 14:21:04.072851
+125	2023-01-06	\N	500.00	Miscellaneous	2023 Jan 6 GLS.jpg	2025-03-03 14:21:14.403111	2025-03-03 14:21:14.419506
+126	\N	\N	\N	Miscellaneous	222 - 10.jpeg	2025-03-03 14:21:35.44694	2025-03-03 14:21:35.464598
+127	2018-10-21	Jittery	131.93	Food & Dining	222 - 100.jpeg	2025-03-03 14:21:45.435982	2025-03-03 14:21:45.452148
+128	2024-04-13	DORA CHEVRON	29.97	Transportation	222 - 11.jpeg	2025-03-03 14:22:05.288308	2025-03-03 14:22:05.304135
+129	2024-04-13	Chevron	20.84	Transportation	222 - 12.jpeg	2025-03-03 14:22:15.020035	2025-03-03 14:22:15.035824
+130	\N	\N	\N	Miscellaneous	222 - 13.jpeg	2025-03-03 14:22:25.631576	2025-03-03 14:22:25.647745
+131	\N	\N	\N	Miscellaneous	222 - 14.jpeg	2025-03-03 14:22:34.65384	2025-03-03 14:22:34.669786
+132	\N	\N	\N	Miscellaneous	222 - 15.jpeg	2025-03-03 14:22:44.590277	2025-03-03 14:22:44.605835
+133	2023-04-24	The UPS Store #6294	14.52	Office Supplies	222 - 17.jpeg	2025-03-03 14:23:05.541918	2025-03-03 14:23:05.557848
+134	\N	\N	\N	Miscellaneous	222 - 18.jpeg	2025-03-03 14:23:14.719011	2025-03-03 14:23:14.734791
+135	\N	\N	\N	Miscellaneous	222 - 19.jpeg	2025-03-03 14:23:25.370913	2025-03-03 14:23:25.38673
+136	2022-04-25	TOWN AND COUNTRY MARATHON	60.37	Transportation	222 - 21.jpeg	2025-03-03 14:23:55.887174	2025-03-03 14:23:55.902639
+137	2022-04-14	Ulmerton Belcher Car Wash	10.00	Transportation	222 - 22.jpeg	2025-03-03 14:24:05.406574	2025-03-03 14:24:05.424177
+138	2022-04-14	Ulmerton Belcher Car Wash	10.00	Transportation	222 - 23.jpeg	2025-03-03 14:24:15.751001	2025-03-03 14:24:15.76754
+139	\N	\N	\N	Miscellaneous	222 - 24.jpeg	2025-03-03 14:24:24.96736	2025-03-03 14:24:24.983408
+140	2019-05-13	WALMART INC.	175.82	Miscellaneous	222 - 26.jpeg	2025-03-03 14:24:46.980976	2025-03-03 14:24:46.996702
+141	2021-11-12	Cool Coast Heating & Cooling	2824.81	Utilities	222 - 27.jpeg	2025-03-03 14:24:55.963316	2025-03-03 14:24:55.983061
+142	2621-09-18	Tropic Express Car Wash	15.06	Transportation	222 - 28.jpeg	2025-03-03 14:25:06.265155	2025-03-03 14:25:06.281118
+143	2021-08-17	LOWE'S HOME CENTERS, LLC	36.57	Office Supplies	222 - 29.jpeg	2025-03-03 14:25:16.269468	2025-03-03 14:25:16.287644
+144	\N	\N	\N	Miscellaneous	222 - 3.jpeg	2025-03-03 14:25:25.590942	2025-03-03 14:25:25.607512
+145	\N	\N	\N	Miscellaneous	222 - 32.jpeg	2025-03-03 14:25:55.589972	2025-03-03 14:25:55.604167
+146	\N	\N	\N	Miscellaneous	222 - 33.jpeg	2025-03-03 14:27:05.348633	2025-03-03 14:27:05.377173
+147	\N	\N	\N	Miscellaneous	222 - 34.jpeg	2025-03-03 14:27:12.612254	2025-03-03 14:27:12.636482
+148	2020-10-02	HOME DEPOT	24.58	Office Supplies	222 - 35.jpeg	2025-03-03 14:27:19.677246	2025-03-03 14:27:19.700808
+149	\N	\N	\N	Miscellaneous	222 - 36.jpeg	2025-03-03 14:27:25.922173	2025-03-03 14:27:25.942035
+150	\N	\N	\N	Miscellaneous	222 - 37.jpeg	2025-03-03 14:27:30.97975	2025-03-03 14:27:30.97975
+151	2020-01-16	Golden Pacific Bank	100.00	Miscellaneous	222 - 39.jpeg	2025-03-03 14:27:42.677513	2025-03-03 14:27:42.69474
+152	2020-01-16	Golden Pacific Bank	100.00	Miscellaneous	222 - 40.jpeg	2025-03-03 14:56:36.08874	2025-03-03 14:56:36.116733
+153	2020-01-12	rogoh ph ber Cafe	56.07	Food & Dining	222 - 41.jpeg	2025-03-03 14:56:45.203973	2025-03-03 14:56:45.225603
+154	2019-09-13	RALPH LAUREN	573.25	Miscellaneous	222 - 42.jpeg	2025-03-03 14:56:54.237069	2025-03-03 14:56:54.257293
+155	2019-08-02	UNIQLO Denver Pavilions	64.77	Miscellaneous	222 - 43.jpeg	2025-03-03 14:57:04.046776	2025-03-03 14:57:04.068945
+156	\N	\N	\N	Miscellaneous	222 - 44.jpeg	2025-03-03 14:57:16.538213	2025-03-03 14:57:16.553621
+157	2019-11-03	Best Buy #128	34.63	Office Supplies	222 - 45.jpeg	2025-03-03 14:57:26.877396	2025-03-03 14:57:26.892925
+158	2019-10-21	UPS Store - #288	14.44	Office Supplies	222 - 46.jpeg	2025-03-03 14:57:33.944133	2025-03-03 14:57:33.962579
+159	2019-12-17	EXPRESO FACTORY OUTLET	28.04	Miscellaneous	222 - 47.jpeg	2025-03-03 14:57:44.099966	2025-03-03 14:57:44.115828
+160	2015-09-08	PLEASURE CHEST LOS ANGELES	114.31	Entertainment	222 - 48.jpeg	2025-03-03 14:57:54.733234	2025-03-03 14:57:54.749192
+161	2019-09-11	LA DUNS & co.	11.46	Food & Dining	222 - 49.jpeg	2025-03-03 14:58:04.356896	2025-03-03 14:58:04.372354
+162	2024-10-02	1712 N. DALE MABRY HWY.	27.00	Office Supplies	222 - 5.jpeg	2025-03-03 14:58:15.007937	2025-03-03 14:58:15.023421
+163	2019-09-07	SUNSATIONS LUGGAGE	148.04	Travel	222 - 50.jpeg	2025-03-03 14:58:24.223472	2025-03-03 14:58:24.239348
+164	2019-09-04	sunsations luggage	148.04	Travel	222 - 51.jpeg	2025-03-03 14:58:33.84891	2025-03-03 14:58:33.864656
+165	2019-11-06	EXPRESS	32.72	Miscellaneous	222 - 52.jpeg	2025-03-03 14:58:43.986879	2025-03-03 14:58:44.004547
+166	2019-09-07	KRISTY BEAUTY	29.55	Healthcare	222 - 53.jpeg	2025-03-03 14:58:54.611973	2025-03-03 14:58:54.627922
+167	2019-09-07	Bloomitnawdale's	50.37	Healthcare	222 - 54.jpeg	2025-03-03 14:59:04.257761	2025-03-03 14:59:04.273248
+168	2019-09-07	Bloomingdale's	131.40	Miscellaneous	222 - 55.jpeg	2025-03-03 14:59:14.709689	2025-03-03 14:59:14.727076
+169	2019-11-25	RAMADA PLAZA	130.03	Travel	222 - 58.jpeg	2025-03-03 14:59:45.838707	2025-03-03 14:59:45.85421
+170	\N	\N	\N	Miscellaneous	222 - 59.jpeg	2025-03-03 14:59:53.647002	2025-03-03 14:59:53.661789
+171	2024-10-02	How doers	27.95	Miscellaneous	222 - 6.jpeg	2025-03-03 15:00:05.39572	2025-03-03 15:00:05.410925
+172	2019-10-24	Audi	165.00	Transportation	222 - 60.jpeg	2025-03-03 15:00:17.583362	2025-03-03 15:00:17.59935
+173	\N	\N	\N	Miscellaneous	222 - 61.jpeg	2025-03-03 15:00:29.156748	2025-03-03 15:00:29.173752
+174	\N	\N	\N	Miscellaneous	222 - 62.jpeg	2025-03-03 15:00:36.014756	2025-03-03 15:00:36.032414
+175	2019-07-26	Statefarm	257.17	Utilities	222 - 63.jpeg	2025-03-03 15:00:45.201322	2025-03-03 15:00:45.217932
+176	2019-06-13	Bank of America	1000.00	Miscellaneous	222 - 64.jpeg	2025-03-03 15:00:54.872568	2025-03-03 15:00:54.888244
+177	2075-06-11	Sushi+BareRestaurant	194.21	Food & Dining	222 - 65.jpeg	2025-03-03 15:01:07.281522	2025-03-03 15:01:07.296861
+178	2619-05-26	BS AW-BLOOMINGT ON	52.09	Transportation	222 - 68.jpeg	2025-03-03 15:01:34.30016	2025-03-03 15:01:34.316741
+179	2019-05-22	PARKmsp	37.00	Transportation	222 - 69.jpeg	2025-03-03 15:01:44.363468	2025-03-03 15:01:44.38268
+180	\N	\N	\N	Miscellaneous	222 - 7.jpeg	2025-03-03 15:01:54.306749	2025-03-03 15:01:54.323937
+181	2019-03-17	Cincinnati/Northern Kentucky International Airport	32.00	Transportation	222 - 70.jpeg	2025-03-03 15:02:05.609321	2025-03-03 15:02:05.623754
+182	2019-02-27	CINCINNATI NORTH	426.03	Transportation	222 - 72.jpeg	2025-03-03 15:02:25.216421	2025-03-03 15:02:25.232305
+183	2019-02-01	STATE OF FLORIDA DEPARTMENT OF HEALTH	\N	Healthcare	222 - 73.jpeg	2025-03-03 15:02:35.352788	2025-03-03 15:02:35.368589
+184	\N	\N	\N	Miscellaneous	222 - 74.jpeg	2025-03-03 15:02:44.809356	2025-03-03 15:02:44.824641
+185	2019-02-13	Hartsfiedd bLiternad ronal	1335.92	Miscellaneous	222 - 75.jpeg	2025-03-03 15:02:55.963812	2025-03-03 15:02:55.978634
+186	2018-12-14	Department of the Treasury - Internal Revenue Service	86299.88	Miscellaneous	222 - 78.jpeg	2025-03-03 15:03:27.887615	2025-03-03 15:03:27.903912
+187	2018-12-15	City of Wyoming Water Department	210.45	Utilities	222 - 79.jpeg	2025-03-03 15:03:39.154562	2025-03-03 15:03:39.171858
+188	2020-03-01	The State of Filonda	\N	Transportation	222 - 8.jpeg	2025-03-03 15:03:43.965203	2025-03-03 15:03:43.981043
+189	2018-11-17	OMNIPLEX	191.39	Miscellaneous	222 - 80.jpeg	2025-03-03 15:03:55.227886	2025-03-03 15:03:55.242898
+190	2018-06-14	Woods Hardware Lockland	72.50	Office Supplies	222 - 81.jpeg	2025-03-03 15:04:04.752646	2025-03-03 15:04:04.766833
+191	2018-01-17	THE HOME DEPOT	287.54	Office Supplies	222 - 82.jpeg	2025-03-03 15:04:15.198092	2025-03-03 15:04:15.213981
+192	2018-08-11	www.junglejims.com	84.60	Groceries	222 - 83.jpeg	2025-03-03 15:04:25.480757	2025-03-03 15:04:25.495117
+193	2018-01-14	Best Buy #153	1810.49	Entertainment	222 - 84.jpeg	2025-03-03 15:04:34.654216	2025-03-03 15:04:34.670317
+194	2018-08-29	Hellman Clothiers	181.90	Miscellaneous	222 - 85.jpeg	2025-03-03 15:04:45.233994	2025-03-03 15:04:45.250095
+195	2018-09-02	The Hertz Corporation	197.57	Transportation	222 - 86.jpeg	2025-03-03 15:04:58.616385	2025-03-03 15:04:58.631908
+196	2018-06-25	TRUE-VALUE	9.39	Miscellaneous	222 - 87.jpeg	2025-03-03 15:05:04.453646	2025-03-03 15:05:04.469588
+197	2018-07-08	VVorralmacy	176.93	Healthcare	222 - 88.jpeg	2025-03-03 15:05:16.127282	2025-03-03 15:05:16.142667
+198	2018-09-04	KFA Weat Chester	273.68	Miscellaneous	222 - 89.jpeg	2025-03-03 15:05:25.240522	2025-03-03 15:05:25.256294
+199	2024-05-07	19TH STREET	23.53	Miscellaneous	222 - 9.jpeg	2025-03-03 15:05:35.789296	2025-03-03 15:05:35.807132
+200	2018-04-20	3461 JOSEPH ROAD	120.88	Miscellaneous	222 - 90.jpeg	2025-03-03 15:05:46.127309	2025-03-03 15:05:46.143271
+201	2018-04-20	THE HOME DEPOT	120.88	Office Supplies	222 - 91.jpeg	2025-03-03 15:05:55.624639	2025-03-03 15:05:55.639896
+202	2017-10-18	RISVES IM BAW SRYC2	479.90	Miscellaneous	222 - 92.jpeg	2025-03-03 15:06:06.202152	2025-03-03 15:06:06.218917
+203	2018-06-27	West Chester Outlet	105.97	Miscellaneous	222 - 93.jpeg	2025-03-03 15:06:15.726287	2025-03-03 15:06:15.742025
+204	\N	\N	\N	Miscellaneous	222 - 94.jpeg	2025-03-03 15:06:25.687741	2025-03-03 15:06:25.704091
+205	2018-01-04	Best Buy #617	1815.49	Entertainment	222 - 98.jpeg	2025-03-03 15:07:05.333153	2025-03-03 15:07:05.349449
+206	\N	\N	\N	Miscellaneous	222 - 99.jpeg	2025-03-03 15:07:16.927578	2025-03-03 15:07:16.94347
+207	2020-03-05	The American Board of Anesthesiology	210.00	Miscellaneous	ABA MOCA Fees 2020.pdf	2025-03-03 15:07:25.398921	2025-03-03 15:07:25.416907
+208	2016-04-25	Airbnb	1236.00	Travel	Airbnb Receipt, Confirmation Code KWZREQ.pdf	2025-03-03 15:07:35.675707	2025-03-03 15:07:35.695091
+209	2023-10-28	amazon.com	23.86	Miscellaneous	Amazon Order 114-6854744-4630643 Dirty Labs.pdf	2025-03-03 15:07:45.634947	2025-03-03 15:07:45.651004
+210	2019-08-29	Amazon Prime Now	64.49	Groceries	Amazon Prime Now Whole Foods Los Angeles Aug 29 2019.pdf	2025-03-03 15:07:56.694588	2025-03-03 15:07:56.711249
+211	2018-09-29	Amazon Prime Now	73.91	Groceries	Amazon Prime Now_ Checkout.pdf	2025-03-03 15:08:05.662027	2025-03-03 15:08:05.677795
+212	2020-08-02	Amazon.com	57.23	Miscellaneous	Amazon.com - Order 113-9612595-8922646.pdf	2025-03-03 15:08:16.097582	2025-03-03 15:08:16.1135
+213	2019-11-08	Amazon.com	12.92	Office Supplies	Amazon.pdf	2025-03-03 15:08:25.264985	2025-03-03 15:08:25.28244
+214	2019-01-19	\N	\N	Miscellaneous	Apple Pay Cash Statement.pdf	2025-03-03 15:08:37.072798	2025-03-03 15:08:37.088906
+215	2018-01-21	Apple Oxmoor	30.74	Office Supplies	Apple Receipt Lightning to USB cable.pdf	2025-03-03 15:08:45.256702	2025-03-03 15:08:45.272792
+216	2016-05-16	Apple Support	713.58	Telecommunication	Apple Support Payment for 2nd Space Gray iPhone Hold.pdf	2025-03-03 15:08:55.188881	2025-03-03 15:08:55.219877
+217	2016-06-05	Wem Corp	30.00	Miscellaneous	Application for 666 Castro Payment Receipt - PayPal .pdf	2025-03-03 15:09:05.801595	2025-03-03 15:09:05.81716
+218	2017-06-01	asurion	199.00	Telecommunication	Asurion Claimfor Google Pixel XL.pdf	2025-03-03 15:09:15.051116	2025-03-03 15:09:15.066988
+219	2018-12-22	Best Buy	246.08	Utilities	August Lock -- Best Buy Order Details.pdf	2025-03-03 15:09:25.476937	2025-03-03 15:09:25.495328
+220	2022-08-02	COMPLE	77.49	Miscellaneous	Automotive Touchup Receipt for Mitsy.png	2025-03-03 15:09:36.741885	2025-03-03 15:09:36.757278
+221	2018-01-23	Ayre Acoustics, Inc.	47.00	Miscellaneous	Ayre Acoustics Remote Control Invoice.pdf	2025-03-03 15:09:55.455006	2025-03-03 15:09:55.471167
+222	2026-01-10	Password Manager Subscription	10.00	Telecommunication	Bitwarden Receipt.jpeg	2025-03-03 15:10:05.414056	2025-03-03 15:10:05.429978
+223	2020-09-19	Brilliant	149.85	Entertainment	Brilliant Subscription Receipt.pdf	2025-03-03 15:10:45.555476	2025-03-03 15:10:45.573261
+224	2020-05-19	YourLens.com	104.59	Healthcare	CONTACTS MAY 2020.pdf	2025-03-03 15:11:05.933117	2025-03-03 15:11:05.948855
+225	2019-01-15	Caremark	918.87	Healthcare	Caremark- Financial Summary.pdf	2025-03-03 15:11:25.287161	2025-03-03 15:11:25.303479
+226	2020-07-29	Charles Schwab	125.00	Miscellaneous	Charles Schwab Client Center.pdf	2025-03-03 15:11:38.293055	2025-03-03 15:11:38.308685
+227	2019-09-10	iStorage Reading	364.33	Utilities	Cincy iStorage for Sept 2019.jpg	2025-03-03 15:11:56.203281	2025-03-03 15:11:56.219264
+228	2020-09-01	Click2Gov	27.00	Utilities	Click2Gov - Payment Receipt - Payment Successful.pdf	2025-03-03 15:12:05.32696	2025-03-03 15:12:05.342708
+229	2017-12-29	Glen Hollon	2800.00	Miscellaneous	Compton Rd Lease Glen Hollon Jan 2018 Payment.pdf	2025-03-03 15:12:15.567682	2025-03-03 15:12:15.586822
+230	2024-12-31	Jason	40.00	Miscellaneous	Confirmed: Your payment to Jason I is complete.pdf	2025-03-03 15:12:26.354216	2025-03-03 15:12:26.370204
+231	2018-12-27	TIRE RACK	314.83	Transportation	DE62496.pdf	2025-03-03 15:12:36.461845	2025-03-03 15:12:36.478013
+232	2017-09-26	Davis Basta Law Firm, PA	464.50	Miscellaneous	Davis Basta Law Firm Invoice re HOA .pdf	2025-03-03 15:12:46.610736	2025-03-03 15:12:46.626788
+233	2020-07-08	Dinsmore & Shohl LLP	2064.00	Miscellaneous	Dinsmore & Shohl LLP Receipt.pdf	2025-03-03 15:12:56.42657	2025-03-03 15:12:56.443262
+234	\N	\N	\N	Miscellaneous	Dinsmore Invoce Ohio BoM May 2020.pdf	2025-03-03 15:13:09.640015	2025-03-03 15:13:09.65544
+235	2024-12-06	Direct Auto Insurance Company	87.29	Transportation	Direct Auto November payment 2024.pdf	2025-03-03 15:13:15.574385	2025-03-03 15:13:15.589801
+236	\N	\N	\N	Miscellaneous	Discount Shoes, Clothing & Accessories  6pm.png	2025-03-03 15:13:27.572691	2025-03-03 15:13:27.589882
+237	2016-09-09	Duke Energy	254.08	Utilities	Duke Energy Electric Bill Aug 2016.pdf	2025-03-03 15:13:34.808384	2025-03-03 15:13:34.825442
+238	2016-10-18	Duke Energy	133.39	Utilities	Duke Energy Electric Bill Current Oct 2016.pdf	2025-03-03 15:15:15.24265	2025-03-03 15:15:15.261754
+239	2016-02-09	Duke Energy	98.90	Utilities	Duke Energy Electric Bill Dec 2015 Jan 2016.pdf	2025-03-03 15:15:22.514023	2025-03-03 15:15:22.540674
+240	2015-02-09	Duke Energy	105.45	Utilities	Duke Energy Electric Bill Jan 2015.pdf	2025-03-03 15:15:27.939832	2025-03-03 15:15:27.969593
+241	2019-06-04	Duke Energy	0.00	Utilities	Duke Energy Final Bill Cincinnati OH Apr 2019.pdf	2025-03-03 15:15:34.272193	2025-03-03 15:15:34.290051
+242	2016-06-07	Allstate Insurance Company	547.00	Utilities	EBC Application.pdf	2025-03-03 15:22:40.103896	2025-03-03 15:22:40.118862
+243	2016-11-16	EBSCO Reception Room Subscription Services	214.25	Entertainment	EBSCO Subscription Invoice.pdf	2025-03-03 15:22:46.563106	2025-03-03 15:22:46.578838
+244	2017-12-15	www elementcase com	215.67	Miscellaneous	Element Case 2017 Receipt.pdf	2025-03-03 15:22:50.542889	2025-03-03 15:22:50.558888
+245	2019-07-30	Equifax	\N	Miscellaneous	Equifax Claim 125 dollars.jpg	2025-03-03 15:22:56.076963	2025-03-03 15:22:56.093262
+246	2016-11-27	Hyeglasses com	135.00	Healthcare	Eyeglasses-order.pdf	2025-03-03 15:23:00.172506	2025-03-03 15:23:00.188798
+247	2022-11-18	SunPass	40.55	Transportation	FLCC_STMT_20221118010101_742446.PDF	2025-03-03 15:23:08.162102	2025-03-03 15:23:08.178057
+248	2017-07-30	DOUBLETREE JACKSONVILLE AIRPORT	110.69	Travel	FOLIODETE_20170731125001.pdf	2025-03-03 15:23:15.110595	2025-03-03 15:23:15.127227
+249	2018-11-23	Park Central Hotel San Francisco	116.28	Travel	Folio-A-Attachment (1).pdf	2025-03-03 15:23:24.766628	2025-03-03 15:23:24.783939
+250	2018-11-20	St Regis Hotel	383.42	Travel	Folio-A-Attachment (2).pdf	2025-03-03 15:23:34.989261	2025-03-03 15:23:35.005533
+251	2018-11-24	Park Central Hotel San Francisco	116.28	Travel	Folio-A-Attachment.pdf	2025-03-03 15:23:45.641674	2025-03-03 15:23:45.658565
+252	2018-08-22	Best Buy	267.49	Office Supplies	Frigidaire Receipt Best Buy Order Details.pdf	2025-03-03 15:23:55.083177	2025-03-03 15:23:55.098869
+253	2013-02-11	APPLE INC.	105.93	Office Supplies	Fwd_ Your receipt from Apple Store, International Plaza - AppleCare for iPad 128 GB.pdf	2025-03-03 15:24:04.686078	2025-03-03 15:24:04.701964
+254	2023-12-29	BillMatrix	565.00	Utilities	GLS Auto Payment 2023 Dec 29.pdf	2025-03-03 15:24:14.112033	2025-03-03 15:24:14.128302
+255	2023-06-18	GRASSROOTS KAVA HOUSE	15.50	Food & Dining	GRASSROOTS KAVA HOUSE Sun Jun 18 2023.pdf	2025-03-03 15:24:24.244094	2025-03-03 15:24:24.260278
+256	2023-02-08	GEICO	428.54	Transportation	Geico Payment Feb 2023.png	2025-03-03 15:24:43.535409	2025-03-03 15:24:43.554499
+257	2024-01-12	billmatrix	525.00	Utilities	Global Lending Car Payment Jan 2024.png	2025-03-03 15:24:54.892259	2025-03-03 15:24:54.908598
+258	2021-09-27	Global Lending Services	1259.54	Miscellaneous	Global Lending Service Car Payment Coupon.pdf	2025-03-03 15:25:05.820529	2025-03-03 15:25:05.839012
+259	2023-07-07	Amazon Web Services	3.48	Utilities	Gmail - Thank you for your payment.pdf	2025-03-03 15:25:14.627451	2025-03-03 15:25:14.64578
+260	2019-08-29	IHOP	29.00	Food & Dining	Grub Hub LA IHOP Aug 29 2019.pdf	2025-03-03 15:25:24.661858	2025-03-03 15:25:24.676478
+261	2019-11-21	QuickIDCard.com	23.35	Office Supplies	IBM Watson Health ID Badge.pdf	2025-03-03 15:25:34.802039	2025-03-03 15:25:34.81803
+262	2021-08-04	IDAA	580.00	Entertainment	IMG_0029.JPEG	2025-03-03 15:25:45.246423	2025-03-03 15:25:45.262719
+263	2020-06-01	Bed Bath & Beyond	51.25	Miscellaneous	IMG_0033.JPEG	2025-03-03 15:25:54.960528	2025-03-03 15:25:54.977009
+264	2020-07-07	Unknown	199.00	Telecommunication	IMG_1903.JPEG	2025-03-03 15:26:15.35148	2025-03-03 15:26:15.368769
+265	2023-06-18	Hats At The Pier	36.37	Miscellaneous	IMG_1962.PNG	2025-03-03 15:26:34.397611	2025-03-03 15:26:34.415194
+266	2023-07-01	SUN PASS	35.00	Transportation	IMG_1998.PNG	2025-03-03 15:26:44.816047	2025-03-03 15:26:44.831674
+267	2023-08-01	FEDERAL BUREAU OF PRISONS	108.95	Miscellaneous	IMG_2080.PNG	2025-03-03 15:27:05.016668	2025-03-03 15:27:05.034209
+268	2026-01-10	Password Manager Subscription	10.00	Telecommunication	Image 1-10-25 at 3.15 AM.JPG	2025-03-03 15:27:24.882832	2025-03-03 15:27:24.898756
+269	2018-01-21	Apple Oxmoor	30.74	Miscellaneous	Lightning to USB Cable.pdf	2025-03-03 15:27:44.752186	2025-03-03 15:27:44.77043
+270	2024-11-30	Lux 13	227.95	Utilities	Like 13 monthly payment December 2024.pdf	2025-03-03 15:27:54.786888	2025-03-03 15:27:54.802694
+271	2021-03-04	LOWE'S HOME CENTERS, LLC	200.01	Office Supplies	Lowe’s Receipt Mar 2021.JPEG	2025-03-03 15:28:15.981901	2025-03-03 15:28:15.997654
+272	2020-06-27	Residence Inn Sacramento Downtown at Capitol Park	152.41	Travel	MEGARGEL_78339.pdf	2025-03-03 15:28:35.131997	2025-03-03 15:28:35.152354
+273	2019-10-25	Fairfield by Marriott Sacramento Rancho Cordova	202.13	Travel	MEGARGEL_96949.pdf	2025-03-03 15:28:45.857304	2025-03-03 15:28:45.87336
+274	2019-09-20	Paddle.com Market Ltd	39.95	Office Supplies	MacPaw CleanMyMac Invoice Paddle.com Order #5677588-2657277.pdf	2025-03-03 15:28:56.021116	2025-03-03 15:28:56.036937
+275	2019-09-20	Paddle.com Market Ltd	39.95	Office Supplies	MacPaw CleanMyMac X Order #5677588-2657277.pdf	2025-03-03 15:29:05.83401	2025-03-03 15:29:05.849675
+276	2024-01-10	jing	52.36	Miscellaneous	Maldonado v Apple Settlement Payment 2.png	2025-03-03 15:29:14.556185	2025-03-03 15:29:14.571705
+277	2016-02-17	Radar Healthcare Providers. Inc.	18000.00	Healthcare	May 11 ACH Payment Stub-47_1.pdf	2025-03-03 15:29:24.798864	2025-03-03 15:29:24.814432
+278	2016-05-18	Radar Healthcare Providers, Inc.	9000.00	Healthcare	May 18 ACH Payment Stub-42.pdf	2025-03-03 15:29:35.310817	2025-03-03 15:29:35.332761
+279	2016-05-25	Sequoia Healthcare, LLC	9000.00	Healthcare	May 25 ACH Payment Stub-47_1.pdf	2025-03-03 15:29:44.605625	2025-03-03 15:29:44.621357
+280	2020-12-08	Muse	378.92	Healthcare	Muse S.pdf	2025-03-03 15:29:54.747894	2025-03-03 15:29:54.764167
+281	2020-04-08	IPFS CORPORATION OF CALIFORNIA	609.27	Utilities	NOTICE OF INTENT TO CANCEL_854848_JAMES D. MEGARGEL, MD_040820_12624917.pdf	2025-03-03 15:30:06.884135	2025-03-03 15:30:06.899884
+282	2017-10-11	Management and Associates	1002.95	Miscellaneous	Oak Haven HOA Pymnt Due 20th but Paid on 11th.pdf	2025-03-03 15:30:15.895835	2025-03-03 15:30:15.915841
+283	2017-10-25	Management and Associates	1012.90	Miscellaneous	Oak Haven HOA Pymnt Due 27th.pdf	2025-03-03 15:30:25.727337	2025-03-03 15:30:25.747855
+284	2017-10-08	Management and Associates	397.90	Utilities	Oak Haven Regular Monthly HOA Pymnt Due October.pdf	2025-03-03 15:30:35.352342	2025-03-03 15:30:35.368446
+285	2018-04-22	Microsoft Corporation	12.50	Office Supplies	Office 365 Invoice for Sequoia 2018-Apr.pdf	2025-03-03 15:30:45.284672	2025-03-03 15:30:45.30078
+286	2019-11-22	Microsoft Corporation	12.50	Office Supplies	Office 365 copy.pdf	2025-03-03 15:30:55.117381	2025-03-03 15:30:55.135869
+287	2018-04-22	Microsoft Corporation	12.50	Office Supplies	Office 365.pdf	2025-03-03 15:31:05.560367	2025-03-03 15:31:05.576741
+288	2019-04-15	OPTICS SOHO TAMPA	358.95	Healthcare	Optics Soho Receipt Ray-Ban Havana Distance Glasses.pdf	2025-03-03 15:31:16.014323	2025-03-03 15:31:16.031846
+289	2020-07-07	Imperial PFS	585.26	Miscellaneous	PNG image 2.png	2025-03-03 15:31:44.684145	2025-03-03 15:31:44.700112
+290	2020-07-04	Imperial PFS	585.26	Miscellaneous	PNG image copy.png	2025-03-03 15:31:54.542695	2025-03-03 15:31:54.558798
+291	\N	\N	\N	Miscellaneous	PNG image.png	2025-03-03 15:32:05.72414	2025-03-03 15:32:05.792478
+292	2018-06-01	State Medical Board of Ohio	308.50	Healthcare	Payment_Receipt_X-2018-06-01_09-12-28.pdf	2025-03-03 15:32:16.06023	2025-03-03 15:32:16.076096
+293	2019-09-15	Practice fusion	1188.00	Office Supplies	PracticeFusion_Sep2019.pdf	2025-03-03 15:32:25.538605	2025-03-03 15:32:25.554641
+294	2016-12-13	Quicken, Inc	64.99	Office Supplies	Quicken 2017 Purchase Receipt.pdf	2025-03-03 15:32:36.293951	2025-03-03 15:32:36.310334
+295	2023-04-03	U-Haul Moving & Storage Of Gainesville	75.20	Transportation	Receipt UHaul Apr 2023.png	2025-03-03 15:32:56.156721	2025-03-03 15:32:56.173734
+296	2019-01-31	HEALTH	379.00	Healthcare	Receipt for Florida Board of Medicine Renewal from 2019 to 2021..pdf	2025-03-03 15:33:06.395107	2025-03-03 15:33:06.412783
+297	2018-08-24	Delta Air Lines	213.20	Travel	Receipts _ Delta Air Lines - Refund Credit Voucher.pdf	2025-03-03 15:33:16.607837	2025-03-03 15:33:16.623242
+298	2019-08-30	Avis Rent a Car	261.63	Transportation	Reservations _ Avis Rent a Car.pdf	2025-03-03 15:33:35.838972	2025-03-03 15:33:35.854657
+299	2016-12-27	Cigna	597.78	Healthcare	Schedule Payment Confirmation.pdf	2025-03-03 15:33:46.026164	2025-03-03 15:33:46.043423
+300	\N	\N	152.38	Miscellaneous	Screen Shot 2022-09-23 at 11.57.10 AM.png	2025-03-03 15:34:06.531956	2025-03-03 15:34:06.547792
+301	2022-09-23	James Megargel	100.94	Miscellaneous	Screen Shot 2022-09-23 at 12.16.01 PM.png	2025-03-03 15:34:15.108084	2025-03-03 15:34:15.124483
+302	2022-09-25	LinkedIn Corporation	0.00	Telecommunication	Screen Shot 2022-09-25 at 3.48.35 PM.png	2025-03-03 15:34:25.405833	2025-03-03 15:34:25.427294
+303	2022-10-08	Britney G	29.00	Healthcare	Screen Shot 2022-10-07 at 1.55.06 PM.png	2025-03-03 15:34:35.178972	2025-03-03 15:34:35.196032
+304	2022-10-14	jing	28.90	Miscellaneous	Screen Shot 2022-10-14 at 11.19.05 AM.png	2025-03-03 15:34:45.184227	2025-03-03 15:34:45.19976
+305	2024-01-01	ccbill.com	6.95	Entertainment	Screenshot 2024-11-08 at 10.41.56 AM.png	2025-03-03 15:34:55.395616	2025-03-03 15:34:55.411701
+306	2025-02-10	Billing & Payments	97.29	Miscellaneous	Screenshot 2025-02-10 at 10.31.00 AM.png	2025-03-03 15:35:09.997185	2025-03-03 15:35:10.017899
+307	2019-09-10	Shutterstock, Inc.	49.00	Office Supplies	Shutterstock Receipt for Art.pdf	2025-03-03 15:35:15.730609	2025-03-03 15:35:15.746872
+308	\N	\N	\N	Miscellaneous	South Beach Auto Transport Mon, 31 Aug 2015 19h10m07s.pdf	2025-03-03 15:35:25.365419	2025-03-03 15:35:25.381672
+309	2019-08-22	SOUTH TRANSPORT	995.00	Transportation	South_Beach_Shipping_Invoice_Megargel_BMWM-M5.pdf	2025-03-03 15:35:38.463799	2025-03-03 15:35:38.479719
+310	2024-12-07	StorQuest-Gainesville/NW 67th	96.73	Miscellaneous	StorQuest Self-Storage Unit G32 Dec 2024.pdf	2025-03-03 15:35:46.246938	2025-03-03 15:35:46.262841
+311	2023-07-16	SunPass	30.00	Transportation	SunPass Receipt Jul 16 2023.pdf	2025-03-03 15:35:55.875929	2025-03-03 15:35:55.893086
+312	2017-12-11	Sequoia Healthcare	84.98	Office Supplies	Superior Titanium Money Clip Card Holder Receipt 2017.pdf	2025-03-03 15:36:16.148485	2025-03-03 15:36:16.164376
+313	2017-03-19	amazon.com	688.22	Miscellaneous	Synology Invoice.pdf	2025-03-03 15:36:26.59561	2025-03-03 15:36:26.61158
+314	2018-11-21	Best Buy #128	253.94	Office Supplies	Tiles Best Buy Receipt.pdf	2025-03-03 15:36:36.633698	2025-03-03 15:36:36.650674
+315	2018-12-27	BOB SUMEREL TIRE & SERVICE	48.51	Transportation	Tire Rack Replacement - Road Hazard Coverage Claim 2037230.pdf	2025-03-03 15:36:47.893371	2025-03-03 15:36:47.908606
+316	2023-12-23	CENTRAL FLORIDA EXPRESSWAY AUTHORITY	1.82	Transportation	Toll Receipt Dec 23 2023.pdf	2025-03-03 15:36:56.613469	2025-03-03 15:36:56.629599
+317	2020-03-05	Audi Rocklin	263.03	Transportation	Untitled.pdf	2025-03-03 15:37:07.038077	2025-03-03 15:37:07.056281
+318	2021-07-21	Verizon	139.78	Telecommunication	Verizon Pymnt Jul 2023.pdf	2025-03-03 15:37:15.848878	2025-03-03 15:37:15.864916
+319	2019-08-04	Verizon	576.87	Telecommunication	Verizon_bill_August_04_2019.pdf	2025-03-03 15:37:26.497538	2025-03-03 15:37:26.513633
+320	2020-01-28	WageWorks, Inc.	640.04	Healthcare	WageWorks Jan 2020.pdf	2025-03-03 15:37:38.390614	2025-03-03 15:37:38.406246
+321	2018-01-09	James Megargel	1.99	Miscellaneous	WalletBalance-2018-02-09.pdf	2025-03-03 15:37:46.568469	2025-03-03 15:37:46.5841
+322	\N	\N	\N	Miscellaneous	Zinio Unlimited Receipt.png	2025-03-03 15:38:05.470711	2025-03-03 15:38:05.486209
+323	2020-05-20	The Trevor Project	121.20	Miscellaneous	donation-receipt.pdf	2025-03-03 15:38:25.891275	2025-03-03 15:38:25.907299
+324	2017-10-22	eBags	89.82	Miscellaneous	eBags Receipt for Order 29292015.pdf	2025-03-03 15:38:36.540385	2025-03-03 15:38:36.55621
+325	2020-05-19	Home Depot	24.29	Miscellaneous	eReceipt.pdf	2025-03-03 15:38:46.168138	2025-03-03 15:38:46.183924
+326	2019-12-12	Apple Summit Sierra	108.21	Office Supplies	emailreceipt_20191212R1865975126.pdf	2025-03-03 15:38:56.15339	2025-03-03 15:38:56.169068
+327	2020-05-19	Jimani Self Storage	105.00	Utilities	iCloud Mail.pdf	2025-03-03 15:39:26.309263	2025-03-03 15:39:26.324574
+328	2024-09-22	Apple Support	898.35	Telecommunication	iPhone 13 - Apple Support Payment.pdf	2025-03-03 15:39:36.752874	2025-03-03 15:39:36.768623
+329	2019-08-26	iStorage Reading	364.33	Miscellaneous	iStorage Cincy July 2019.pdf	2025-03-03 15:39:46.790707	2025-03-03 15:39:46.807008
+330	2020-01-28	iStorage Reading	410.05	Miscellaneous	iStorage Jan 2020.pdf	2025-03-03 15:39:56.623039	2025-03-03 15:39:56.638587
+331	2024-11-07	Direct Auto Insurance Company	87.35	Transportation	receipt.pdf	2025-03-03 15:40:16.138428	2025-03-03 15:40:16.154758
+332	2019-12-02	WageWorks, Inc.	632.02	Healthcare	screenshot_29.png	2025-03-03 15:40:28.572236	2025-03-03 15:40:28.590355
+333	2019-12-03	YourLens	52.99	Healthcare	screenshot_30.png	2025-03-03 15:40:37.729862	2025-03-03 15:40:37.746002
+\.
+
+
+--
+-- Name: receipts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: doc_admin
+--
+
+SELECT pg_catalog.setval('public.receipts_id_seq', 333, true);
+
+
+--
+-- Name: receipts receipts_pkey; Type: CONSTRAINT; Schema: public; Owner: doc_admin
+--
+
+ALTER TABLE ONLY public.receipts
+    ADD CONSTRAINT receipts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_receipts_category; Type: INDEX; Schema: public; Owner: doc_admin
+--
+
+CREATE INDEX idx_receipts_category ON public.receipts USING btree (expense_category);
+
+
+--
+-- Name: idx_receipts_date; Type: INDEX; Schema: public; Owner: doc_admin
+--
+
+CREATE INDEX idx_receipts_date ON public.receipts USING btree (date_of_service);
+
+
+--
+-- Name: idx_receipts_payee; Type: INDEX; Schema: public; Owner: doc_admin
+--
+
+CREATE INDEX idx_receipts_payee ON public.receipts USING btree (payee);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
